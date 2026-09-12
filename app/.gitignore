@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+
+# auto-backups written by the Setup Console on every save
+config/backups/
+
+# uploaded media — can be large; the folders are kept via .gitkeep
+public/video/*
+!public/video/.gitkeep
+public/audio/**/*.mp3
+public/audio/**/*.wav
+public/audio/**/*.ogg
+public/audio/**/*.m4a
+public/audio/**/*.aac
+public/audio/**/*.flac
+
+# local tool / OS noise
+.claude/settings.local.json
+*.log
+.DS_Store
+Thumbs.db
