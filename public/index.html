@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#050607" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Second City Shadow</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="app" id="app">
+
+    <!-- ENTRY SCREEN -->
+    <section id="screen-entry" class="screen active">
+      <div class="hdr">
+        <div>
+          <div class="title" id="hero-title">SECOND CITY SHADOW</div>
+          <div class="sub" id="hero-sub">FIELD OPS TERMINAL</div>
+        </div>
+        <div class="right">
+          <div class="id">SCS-OS</div>
+          <div class="code">∎∎∎</div>
+        </div>
+      </div>
+      <div class="entry">
+        <div class="panel brk">
+          <span class="brk-tr"></span><span class="brk-bl"></span>
+          <h2>SECURE CHANNEL</h2>
+          <h1>ROOM CODE</h1>
+          <div class="spacer"></div>
+          <input id="entry-room" type="text" placeholder="• • • •" maxlength="8" autocapitalize="characters" autocomplete="off" inputmode="text" />
+          <div class="spacer"></div>
+          <h2>AGENT CALLSIGN</h2>
+          <input id="entry-name" type="text" placeholder="CALLSIGN" maxlength="24" autocomplete="off" />
+          <div class="spacer"></div>
+          <button class="btn primary full" id="entry-go">CONFIRM IDENTITY ▸</button>
+          <div class="spacer-sm"></div>
+          <div class="tag dim center">SECURE LINK · ENCRYPTED CHANNEL</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAIN HUB -->
+    <section id="screen-main" class="screen">
+      <div class="hdr">
+        <div>
+          <div class="title" id="m-title">SECOND CITY SHADOW</div>
+          <div class="sub">ROOM <span id="m-room">—</span> · <span id="m-name">—</span></div>
+        </div>
+        <div class="right">
+          <div class="id">YOUR CODE</div>
+          <div class="code" id="m-code">000</div>
+        </div>
+      </div>
+
+      <div class="strip">
+        <span class="t">PRIMARY</span><span class="pip"></span>
+      </div>
+
+      <div class="main-actions">
+        <button class="btn-big brk" data-color="amber" id="b-analyze">
+          <span class="brk-tr"></span><span class="brk-bl"></span>
+          <div class="lbl">ANALYZE</div>
+          <svg class="glyph" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="32" cy="32" r="14" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="32" cy="32" r="3" fill="currentColor"/>
+            <line x1="32" y1="2" x2="32" y2="12" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="32" y1="52" x2="32" y2="62" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="2" y1="32" x2="12" y2="32" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="52" y1="32" x2="62" y2="32" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M44 20 L52 12 M20 44 L12 52" stroke="currentColor" stroke-width="1.4" fill="none"/>
+          </svg>
+          <div class="meta">SCAN · MULTI-AGENT</div>
+        </button>
+        <button class="btn-big brk" data-color="red" id="b-phone">
+          <span class="brk-tr"></span><span class="brk-bl"></span>
+          <div class="lbl">PHONE</div>
+          <svg class="glyph" viewBox="0 0 64 64">
+            <path d="M14 8 h36 a2 2 0 0 1 2 2 v44 a2 2 0 0 1 -2 2 h-36 a2 2 0 0 1 -2 -2 v-44 a2 2 0 0 1 2 -2 z"
+                  fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="20" y1="14" x2="44" y2="14" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="28" y1="50" x2="36" y2="50" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="22" cy="24" r="2" fill="currentColor"/>
+            <circle cx="32" cy="24" r="2" fill="currentColor"/>
+            <circle cx="42" cy="24" r="2" fill="currentColor"/>
+            <circle cx="22" cy="34" r="2" fill="currentColor"/>
+            <circle cx="32" cy="34" r="2" fill="currentColor"/>
+            <circle cx="42" cy="34" r="2" fill="currentColor"/>
+          </svg>
+          <div class="meta">ENCRYPTED COMMS</div>
+        </button>
+      </div>
+
+      <div class="strip">
+        <span class="t">SECONDARY · LOCKED UNTIL ANALYSIS</span><span class="pip"></span>
+      </div>
+
+      <div class="icon-row">
+        <button class="icon-btn" id="b-hack" disabled>
+          <svg class="glyph" viewBox="0 0 36 36">
+            <path d="M6 8 L18 4 L30 8 L30 22 Q18 32 6 22 Z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M14 18 l4 4 l8 -10" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+          <div class="lbl">HACK</div>
+          <span class="lock">LOCKED</span>
+        </button>
+        <button class="icon-btn" id="b-features" disabled>
+          <svg class="glyph" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="12" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="18" cy="18" r="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="18" y1="2" x2="18" y2="8" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="18" y1="28" x2="18" y2="34" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="2" y1="18" x2="8" y2="18" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="28" y1="18" x2="34" y2="18" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+          <div class="lbl">FEATURES</div>
+          <span class="lock">LOCKED</span>
+        </button>
+        <button class="icon-btn" id="b-blueprint" disabled>
+          <svg class="glyph" viewBox="0 0 36 36">
+            <rect x="6" y="6" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="20" y="6" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="6" y="20" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="20" y="20" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+          <div class="lbl">BLUEPRINT</div>
+          <span class="lock">LOCKED</span>
+        </button>
+        <button class="icon-btn" id="b-signal" disabled>
+          <svg class="glyph" viewBox="0 0 36 36">
+            <path d="M4 22 q4 -10 14 -10 q10 0 14 10" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M9 24 q3 -7 9 -7 q6 0 9 7" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="18" cy="26" r="3" fill="currentColor"/>
+          </svg>
+          <div class="lbl">SIGNAL</div>
+          <span class="lock">LOCKED</span>
+        </button>
+      </div>
+
+      <div class="strip">
+        <span class="t">ROSTER</span>
+      </div>
+      <div class="roster" id="m-roster"></div>
+
+      <div class="strip">
+        <span class="t">STATUS</span>
+      </div>
+      <div class="panel thin" id="m-status">
+        <span class="mono dim" id="m-status-text">AWAITING TASK</span>
+      </div>
+    </section>
+
+    <!-- ANALYZE SCREEN -->
+    <section id="screen-analyze" class="screen">
+      <div class="bar">
+        <span>ANALYSIS PROTOCOL</span>
+        <span class="mono" id="a-count">0/0</span>
+      </div>
+      <div id="a-instructions" class="panel thin">
+        <span class="mono dim">Find the player whose INCOMING shape matches your OUTGOING shape. Enter their code.</span>
+      </div>
+      <div class="spacer"></div>
+      <div class="analyze-card brk" id="a-card">
+        <span class="brk-tr"></span><span class="brk-bl"></span>
+        <div class="tag center">YOUR LINK</div>
+        <div class="shape-pair">
+          <div>
+            <div id="a-shape-in"></div>
+            <div class="shape-label in">INCOMING</div>
+          </div>
+          <div class="me">YOU</div>
+          <div>
+            <div id="a-shape-out"></div>
+            <div class="shape-label out">OUTGOING</div>
+          </div>
+        </div>
+        <div>
+          <div class="your-code-tag">YOUR CODE</div>
+          <div class="code-display" id="a-mycode">000</div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="strip"><span class="t">ENTER NEXT-AGENT CODE</span></div>
+      <input id="a-target-code" inputmode="numeric" type="text" placeholder="• • •" />
+      <div class="spacer"></div>
+      <button class="btn primary full" id="a-submit">SUBMIT LINK ▸</button>
+      <div class="spacer"></div>
+      <div class="progress-bar"><div id="a-progress" style="width:0%"></div></div>
+      <div class="spacer-sm"></div>
+      <div class="bar"><span>CHAIN INTEGRITY</span><span id="a-chainstat">0%</span></div>
+      <div id="a-success" style="display:none"><div class="banner" id="a-success-msg">ANALYSIS COMPLETE</div></div>
+    </section>
+
+    <!-- HACK SCREEN -->
+    <section id="screen-hack" class="screen">
+      <div class="bar">
+        <span>INTRUSION PROTOCOL</span>
+        <button class="back" id="h-back">ABORT</button>
+      </div>
+      <div class="panel thin"><span class="mono dim" id="h-instructions">Tap when your icon lights up.</span></div>
+      <div class="spacer"></div>
+      <div class="hack-stage">
+        <div class="step-dots" id="h-dots"></div>
+        <button class="hack-tap" id="h-tap">WAIT</button>
+        <div class="mono dim" id="h-status">STAND BY</div>
+      </div>
+    </section>
+
+    <!-- SIGNAL SCREEN -->
+    <section id="screen-signal" class="screen">
+      <div class="bar">
+        <span>SIGNAL DECRYPTION</span>
+        <button class="back" id="s-back">ABORT</button>
+      </div>
+      <div class="panel thin"><span class="mono dim" id="s-instructions">Each player has one fragment.</span></div>
+      <div class="signal-frag brk" id="s-fragment-card">
+        <span class="brk-tr"></span><span class="brk-bl"></span>
+        <div class="tag">YOUR FRAGMENT</div>
+        <div class="name" id="s-frag-name">FRAGMENT —</div>
+        <button class="play-btn" id="s-play"><div class="triangle"></div></button>
+        <audio id="s-audio" preload="auto"></audio>
+      </div>
+      <div class="strip"><span class="t">ASSEMBLE ORDER</span></div>
+      <div class="order-display mono" id="s-order">— — — —</div>
+      <div class="order-pad" id="s-pad"></div>
+      <div class="spacer"></div>
+      <div class="flex">
+        <button class="btn ghost grow" id="s-clear">CLEAR</button>
+        <button class="btn primary grow" id="s-submit">TRANSMIT ▸</button>
+      </div>
+      <div class="spacer"></div>
+      <div id="s-success" style="display:none"><div class="banner" id="s-success-msg">SIGNAL DECRYPTED</div></div>
+    </section>
+
+    <!-- FEATURES SCREEN -->
+    <section id="screen-features" class="screen">
+      <div class="bar">
+        <span>FEATURE ANALYSIS</span>
+        <button class="back" id="f-back">EXIT</button>
+      </div>
+      <div class="panel thin"><span class="mono dim" id="f-instructions">Locate insertion points marked in red.</span></div>
+      <div class="spacer"></div>
+      <div class="viewer brk" id="f-viewer">
+        <span class="brk-tr"></span><span class="brk-bl"></span>
+        <div class="corner-tag">DEVICE / SUBJECT</div>
+        <div class="corner-tag r facing" id="f-facing">VIEW · FRONT</div>
+        <div class="legend">⬤ LOCK-PICK PORT</div>
+      </div>
+      <div class="view-bar" id="f-views"></div>
+      <div class="spacer"></div>
+      <div id="f-port-list"></div>
+    </section>
+
+    <!-- BLUEPRINT SCREEN -->
+    <section id="screen-blueprint" class="screen">
+      <div class="bar">
+        <span>STRUCTURAL BLUEPRINT</span>
+        <button class="back" id="bp-back">EXIT</button>
+      </div>
+      <div class="panel thin"><span class="mono dim" id="bp-instructions">Exploded structural blueprint.</span></div>
+      <div class="spacer"></div>
+      <div class="viewer brk" id="bp-viewer">
+        <span class="brk-tr"></span><span class="brk-bl"></span>
+        <div class="corner-tag">EXPLODED VIEW</div>
+        <div class="corner-tag r facing" id="bp-facing">VIEW · FRONT</div>
+      </div>
+      <div class="view-bar" id="bp-views"></div>
+      <div class="bar"><span>SECTION INDEX</span><span class="mono dim">SCROLL</span></div>
+      <div class="section-list" id="bp-sections"></div>
+    </section>
+
+    <!-- PHONE SCREEN -->
+    <section id="screen-phone" class="screen">
+      <div class="bar">
+        <span id="ph-title">ENCRYPTED COMMS</span>
+        <button class="back" id="ph-back">EXIT</button>
+      </div>
+      <div class="phone-display" id="ph-display">⏵</div>
+      <div class="keypad" id="ph-keypad"></div>
+      <div class="phone-call-row">
+        <button class="btn erase" id="ph-erase">⌫ ERASE</button>
+        <button class="btn call" id="ph-call">CALL ▸</button>
+      </div>
+      <div class="strip"><span class="t">DIRECTORY</span></div>
+      <div class="contacts" id="ph-contacts"></div>
+    </section>
+
+  </div>
+
+  <!-- modal -->
+  <div class="modal-back" id="modal">
+    <div class="modal brk">
+      <span class="brk-tr"></span><span class="brk-bl"></span>
+      <h3 id="modal-title">CONFIRM</h3>
+      <p id="modal-body" class="mono"></p>
+      <div class="row">
+        <button class="btn ghost" id="modal-cancel">CANCEL</button>
+        <button class="btn primary" id="modal-ok">CONFIRM ▸</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- video overlay -->
+  <div class="video-back" id="video-overlay">
+    <div class="top">
+      <span id="video-label">CONNECTING…</span>
+      <span class="mono">● LIVE</span>
+    </div>
+    <video id="video-el" playsinline controls></video>
+    <button class="end" id="video-end">END CALL</button>
+  </div>
+
+  <!-- toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

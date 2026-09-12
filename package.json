@@ -1,0 +1,21 @@
+{
+  "name": "second-city-shadow",
+  "version": "1.0.0",
+  "description": "Pack-and-play mobile escape room webapp - The Second City Shadow",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.3"
+  }
+}

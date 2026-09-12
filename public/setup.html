@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SCS · Setup Console</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <style>
+    .app { max-width: 1080px; padding-bottom: 120px; }
+
+    /* tabs */
+    .tabs {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 14px;
+    }
+    .tabs button {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--text-dim);
+      padding: 9px 14px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+    }
+    .tabs button.active {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(245,179,42,0.08);
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* generic form layout */
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .field label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--text-dim); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    @media (max-width: 640px) {
+      .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+    }
+    textarea { min-height: 64px; resize: vertical; }
+
+    input[type="color"] {
+      width: 44px; height: 38px; padding: 2px;
+      background: var(--bg-2); border: 1px solid var(--line);
+    }
+    .color-row { display: flex; gap: 8px; align-items: center; }
+    .color-row input[type="text"] { flex: 1; }
+
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--amber); }
+    .check-row {
+      display: flex; align-items: center; gap: 8px;
+      border: 1px solid var(--line); padding: 9px 12px;
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+    }
+    .check-row.on { border-color: var(--line-strong); color: var(--amber); }
+
+    input[type="range"] { width: 100%; accent-color: var(--amber); }
+
+    /* editable tables */
+    .rows { display: flex; flex-direction: column; gap: 6px; }
+    .row-item {
+      display: grid; gap: 6px; align-items: center;
+      border: 1px solid var(--line); padding: 8px;
+    }
+    .row-item input, .row-item select { padding: 8px 10px; font-size: 12px; }
+    .row-item .btn { padding: 8px 10px; font-size: 10px; }
+    .btn.small { padding: 8px 10px; font-size: 10px; }
+    .btn.icon { padding: 8px 12px; }
+
+    /* 3D editors */
+    .viewer.editor { aspect-ratio: 4 / 3; cursor: crosshair; }
+    .viewer.editor.mode-orbit { cursor: grab; }
+    .editor-toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    .editor-toolbar .btn.on {
+      background: rgba(245,179,42,0.16);
+      color: var(--amber);
+      border-color: var(--amber);
+    }
+    .hint {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
+      color: var(--text-dim); margin: 4px 0 10px;
+    }
+
+    .pt-row { grid-template-columns: 1fr auto auto auto auto; }
+    .pt-row.selected { border-color: var(--amber); background: rgba(245,179,42,0.06); }
+    .pt-row .coords { font-family: var(--mono); font-size: 9px; color: var(--text-dim); letter-spacing: 0.05em; }
+    .badge {
+      font-family: var(--mono); font-size: 8px; letter-spacing: 0.16em;
+      border: 1px solid var(--line); color: var(--text-dim);
+      padding: 3px 6px; white-space: nowrap;
+    }
+    .badge.pos { color: var(--green); border-color: rgba(110,231,167,0.4); }
+
+    .sec-row { grid-template-columns: 34px 1fr auto; cursor: pointer; }
+    .sec-row.selected { border-color: var(--cyan); background: rgba(122,215,255,0.06); }
+    .sec-row .id { font-family: var(--mono); color: var(--red); font-size: 14px; text-align: center; }
+    .sec-row .nm { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; }
+
+    /* order builder chips */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 42px; border: 1px solid var(--line); padding: 8px; }
+    .chips .chip {
+      font-family: var(--mono); font-size: 14px; letter-spacing: 0.1em;
+      border: 1px solid var(--amber); color: var(--amber);
+      padding: 6px 12px; background: rgba(245,179,42,0.08);
+      cursor: pointer;
+    }
+    .chips .chip:hover { border-color: var(--red); color: var(--red); }
+    .order-pad-mini { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .order-pad-mini button {
+      font-family: var(--mono); font-size: 14px;
+      border: 1px solid var(--line); background: transparent; color: var(--text);
+      padding: 8px 14px;
+    }
+
+    /* light pattern grid */
+    .lightgrid {
+      display: grid;
+      gap: 10px;
+      justify-content: start;
+      margin: 4px 0 10px;
+    }
+    .lightgrid .cell {
+      width: 76px; height: 60px;
+      border: 1px solid var(--line);
+      background: #0a0c0e;
+      color: var(--text-faint);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 5px;
+      transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s;
+    }
+    .lightgrid .cell .bulb {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 1px solid currentColor;
+      background: transparent;
+    }
+    .lightgrid .cell.on {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(245,179,42,0.10);
+      box-shadow: inset 0 0 18px rgba(245,179,42,0.22);
+    }
+    .lightgrid .cell.on .bulb {
+      background: var(--amber);
+      box-shadow: 0 0 12px var(--amber), 0 0 26px rgba(245,179,42,0.55);
+    }
+    .payload-preview {
+      font-family: var(--mono); font-size: 10px; line-height: 1.55;
+      border: 1px solid var(--line); padding: 10px 12px;
+      color: var(--text-dim); white-space: pre; overflow-x: auto;
+    }
+    .payload-preview .k { color: var(--amber); }
+
+    /* orientation row */
+    .orient-row {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      margin: 6px 0 4px;
+    }
+    .orient-row input[type="number"] { width: 90px; }
+    .mini-label {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
+      color: var(--text-dim);
+    }
+    .check-row.compact { padding: 7px 10px; cursor: pointer; }
+
+    /* save bar */
+    .savebar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(5,6,7,0.95);
+      border-top: 1px solid var(--line-strong);
+      padding: 12px 16px;
+      display: flex; gap: 10px; align-items: center; justify-content: flex-end;
+      z-index: 40;
+      backdrop-filter: blur(6px);
+    }
+    .savebar .status { margin-right: auto; font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--text-dim); }
+    .savebar .status.dirty { color: var(--red); }
+
+    /* media picker modal */
+    .picker {
+      background: #0c0d10; border: 1px solid var(--line-strong);
+      max-width: 560px; width: 100%; max-height: 80vh;
+      display: flex; flex-direction: column; padding: 16px; gap: 10px;
+    }
+    .picker h3 { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.24em; color: var(--amber); }
+    .picker .list { overflow: auto; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .picker .file {
+      display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; align-items: center;
+      border: 1px solid var(--line); padding: 8px 10px;
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+    }
+    .picker .file .sz { color: var(--text-dim); font-size: 9px; }
+    .picker .preview-slot { border: 1px solid var(--line); padding: 8px; }
+    .picker .preview-slot video, .picker .preview-slot audio { width: 100%; display: block; }
+
+    .raw-json { width: 100%; min-height: 480px; font-family: var(--mono); font-size: 11px; }
+    .empty { color: var(--text-dim); font-family: var(--mono); padding: 14px; text-align: center; border: 1px dashed var(--line); font-size: 10px; letter-spacing: 0.14em; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="hdr">
+      <div>
+        <div class="title">SETUP CONSOLE</div>
+        <div class="sub">SCS · CONTENT &amp; PUZZLE EDITOR</div>
+      </div>
+      <div class="right">
+        <div class="id"><a href="/admin.html" style="color:var(--text-dim);text-decoration:none">◂ HOST CONSOLE</a></div>
+        <div class="code" id="hdr-status">—</div>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button data-tab="points">3D POINTS</button>
+      <button data-tab="quadrants">QUADRANTS</button>
+      <button data-tab="analyze">ANALYZE</button>
+      <button data-tab="hack">HACK</button>
+      <button data-tab="signal">SIGNAL</button>
+      <button data-tab="phone">PHONE</button>
+      <button data-tab="system">SESSION &amp; DEVICES</button>
+      <button data-tab="theme">THEME</button>
+      <button data-tab="raw">RAW JSON</button>
+    </div>
+
+    <div class="tab-pane" id="pane-points"></div>
+    <div class="tab-pane" id="pane-quadrants"></div>
+    <div class="tab-pane" id="pane-analyze"></div>
+    <div class="tab-pane" id="pane-hack"></div>
+    <div class="tab-pane" id="pane-signal"></div>
+    <div class="tab-pane" id="pane-phone"></div>
+    <div class="tab-pane" id="pane-system"></div>
+    <div class="tab-pane" id="pane-theme"></div>
+    <div class="tab-pane" id="pane-raw"></div>
+  </div>
+
+  <div class="savebar">
+    <span class="status" id="save-status">LOADING…</span>
+    <button class="btn ghost" id="btn-revert">REVERT</button>
+    <button class="btn primary" id="btn-save">SAVE &amp; APPLY ▸</button>
+  </div>
+
+  <!-- media picker modal -->
+  <div class="modal-back" id="picker-back">
+    <div class="picker brk">
+      <span class="brk-tr"></span><span class="brk-bl"></span>
+      <h3 id="picker-title">SELECT MEDIA</h3>
+      <div class="flex">
+        <button class="btn small grow" id="picker-upload">⬆ UPLOAD NEW FILE</button>
+        <input type="file" id="picker-file" style="display:none" />
+      </div>
+      <div class="list" id="picker-list"></div>
+      <div class="preview-slot" id="picker-preview" style="display:none"></div>
+      <div class="flex">
+        <input type="text" id="picker-manual" placeholder="/video/custom.mp4 (manual path)" />
+        <button class="btn small" id="picker-use-manual">USE</button>
+      </div>
+      <button class="btn ghost full" id="picker-cancel">CANCEL</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="/js/setup/setup.js"></script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+{
+  "session": {
+    "minPlayers": 2,
+    "maxPlayers": 8,
+    "playerCodeLength": 3,
+    "autoUnlockOnAnalyzeSuccess": [
+      "hack",
+      "features",
+      "blueprint",
+      "signal"
+    ]
+  },
+  "esp32": {
+    "hackWebhook": "http://192.168.1.50/trigger/hack",
+    "signalWebhook": "http://192.168.1.51/trigger/signal",
+    "webhookMethod": "POST",
+    "webhookTimeoutMs": 4000,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "hackPayload": {
+      "event": "hack_complete"
+    },
+    "signalPayload": {
+      "event": "signal_complete"
+    }
+  },
+  "analyze": {
+    "shapes": [
+      "triangle",
+      "circle",
+      "square",
+      "pentagon",
+      "hexagon",
+      "star",
+      "diamond",
+      "cross"
+    ],
+    "instructions": "Find the player whose INCOMING shape matches your OUTGOING shape. Enter their code.",
+    "successMessage": "ANALYSIS COMPLETE — SYSTEMS UNLOCKED",
+    "shuffleShapes": true
+  },
+  "hack": {
+    "sequenceLength": 8,
+    "stepTimeoutMs": 6000,
+    "preStartCountdownMs": 3000,
+    "failRetryDelayMs": 1600,
+    "successExitDelayMs": 2500,
+    "instructions": "Tap when your icon lights up. Wrong taps reset the sequence.",
+    "successMessage": "INTRUSION SUCCESSFUL",
+    "successMedia": "",
+    "fireWebhook": true,
+    "lightPattern": [
+      [
+        1,
+        0,
+        1
+      ],
+      [
+        0,
+        1,
+        0
+      ]
+    ]
+  },
+  "signal": {
+    "fragments": [
+      {
+        "id": 1,
+        "symbol": "α",
+        "label": "FRAGMENT α",
+        "audio": "/audio/signal/frag1.mp3"
+      },
+      {
+        "id": 2,
+        "symbol": "β",
+        "label": "FRAGMENT β",
+        "audio": "/audio/signal/frag2.mp3"
+      },
+      {
+        "id": 3,
+        "symbol": "γ",
+        "label": "FRAGMENT γ",
+        "audio": "/audio/signal/frag3.mp3"
+      },
+      {
+        "id": 4,
+        "symbol": "δ",
+        "label": "FRAGMENT δ",
+        "audio": "/audio/signal/frag4.mp3"
+      },
+      {
+        "id": 5,
+        "symbol": "ε",
+        "label": "FRAGMENT ε",
+        "audio": "/audio/signal/frag5.mp3"
+      },
+      {
+        "id": 6,
+        "symbol": "ζ",
+        "label": "FRAGMENT ζ",
+        "audio": "/audio/signal/frag6.mp3"
+      },
+      {
+        "id": 7,
+        "symbol": "η",
+        "label": "FRAGMENT η",
+        "audio": "/audio/signal/frag7.mp3"
+      },
+      {
+        "id": 8,
+        "symbol": "θ",
+        "label": "FRAGMENT θ",
+        "audio": "/audio/signal/frag8.mp3"
+      }
+    ],
+    "correctOrder": [
+      3,
+      1,
+      4,
+      2
+    ],
+    "instructions": "Each player has one fragment. Play them, decide the order, then submit.",
+    "successMessage": "SIGNAL DECRYPTED",
+    "successMedia": "/audio/signal/success.mp3",
+    "fireWebhook": true,
+    "successExitDelayMs": 3000
+  },
+  "phone": {
+    "title": "ENCRYPTED COMMS",
+    "contacts": [
+      {
+        "label": "ENIGMA",
+        "number": "555-0001"
+      },
+      {
+        "label": "BLOCKED",
+        "number": ""
+      }
+    ],
+    "callMap": [
+      {
+        "number": "555-0001",
+        "kind": "video",
+        "src": "/video/villain.mp4",
+        "label": "ENIGMA"
+      },
+      {
+        "number": "1234",
+        "kind": "video",
+        "src": "/video/villain.mp4",
+        "label": "ENIGMA (short)"
+      }
+    ],
+    "fallbackMessage": "NUMBER UNREACHABLE"
+  },
+  "features": {
+    "modelPath": "/3dfiles/bomb_full.obj",
+    "wireframeColor": "#f5b32a",
+    "highlightColor": "#ff2a3a",
+    "instructions": "Locate insertion points marked in red. These are the only viable lock-pick vectors.",
+    "lockPickPoints": [
+      {
+        "label": "PORT A",
+        "modelPosition": [
+          279.821,
+          -150.422,
+          100.758
+        ]
+      }
+    ],
+    "frontYawDeg": 0,
+    "autoRotate": true
+  },
+  "blueprint": {
+    "instructions": "Exploded structural blueprint — 8 sections.",
+    "explodeFactor": 1.6,
+    "wireframeColor": "#7ad7ff",
+    "sections": [
+      {
+        "id": 1,
+        "code": "FTL",
+        "name": "FRONT TOP LEFT",
+        "model": "/3dfiles/whole_ftl.obj",
+        "offset": [
+          -1,
+          1,
+          1
+        ]
+      },
+      {
+        "id": 2,
+        "code": "FTR",
+        "name": "FRONT TOP RIGHT",
+        "model": "/3dfiles/whole_ftr.obj",
+        "offset": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "id": 3,
+        "code": "FBL",
+        "name": "FRONT BOTTOM LEFT",
+        "model": "/3dfiles/whole_fbl.obj",
+        "offset": [
+          -1,
+          -1,
+          1
+        ]
+      },
+      {
+        "id": 4,
+        "code": "FBR",
+        "name": "FRONT BOTTOM RIGHT",
+        "model": "/3dfiles/whole_fbr.obj",
+        "offset": [
+          1,
+          -1,
+          1
+        ]
+      },
+      {
+        "id": 5,
+        "code": "BTL",
+        "name": "BACK TOP LEFT",
+        "model": "/3dfiles/whole_btl.obj",
+        "offset": [
+          -1,
+          1,
+          -1
+        ]
+      },
+      {
+        "id": 6,
+        "code": "BTR",
+        "name": "BACK TOP RIGHT",
+        "model": "/3dfiles/whole_btr.obj",
+        "offset": [
+          1,
+          1,
+          -1
+        ]
+      },
+      {
+        "id": 7,
+        "code": "BBL",
+        "name": "BACK BOTTOM LEFT",
+        "model": "/3dfiles/whole_bbl.obj",
+        "offset": [
+          -1,
+          -1,
+          -1
+        ]
+      },
+      {
+        "id": 8,
+        "code": "BBR",
+        "name": "BACK BOTTOM RIGHT",
+        "model": "/3dfiles/whole_bbr.obj",
+        "offset": [
+          1,
+          -1,
+          -1
+        ]
+      }
+    ],
+    "frontYawDeg": 0,
+    "autoRotate": true
+  },
+  "ui": {
+    "heroTitle": "SECOND CITY SHADOW",
+    "heroSubtitle": "FIELD OPS TERMINAL",
+    "lockedLabel": "LOCKED",
+    "lobbyHint": "Awaiting agents...",
+    "primaryColor": "#f5b32a",
+    "accentColor": "#ff2a3a"
+  }
+}

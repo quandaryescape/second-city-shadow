@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SCS · Host Console</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" />
+  <style>
+    .room-list .r {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+    }
+    .room-list .r.active { border-color: var(--amber); background: rgba(245,179,42,0.06); }
+    .room-list .r .c { color: var(--amber); font-size: 14px; letter-spacing: 0.24em; }
+    .room-list .r .meta { color: var(--text-dim); font-size: 9px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--text-dim); }
+    .empty { color: var(--text-dim); font-family: var(--mono); padding: 14px; text-align: center; border: 1px dashed var(--line); }
+    .qr { display: inline-block; padding: 6px 10px; border: 1px dashed var(--line); color: var(--amber); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="hdr">
+      <div>
+        <div class="title">HOST CONSOLE</div>
+        <div class="sub">SCS · OPERATIONS DESK</div>
+      </div>
+      <div class="right">
+        <div class="id"><a href="/setup.html" style="color:var(--amber);text-decoration:none">⚙ SETUP CONSOLE ▸</a></div>
+        <div class="code" id="sel-tag">—</div>
+      </div>
+    </div>
+
+    <div class="strip"><span class="t">CREATE ROOM</span><span class="pip"></span></div>
+    <div class="panel brk">
+      <span class="brk-tr"></span><span class="brk-bl"></span>
+      <div class="grid-2">
+        <div class="field">
+          <label>CUSTOM CODE (optional)</label>
+          <input id="new-code" type="text" placeholder="AUTO" maxlength="8" />
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn primary" id="btn-create">CREATE ROOM ▸</button>
+        </div>
+        <div class="field">
+          <label>HACK WEBHOOK (optional override)</label>
+          <input id="new-hack" type="text" placeholder="http://192.168.1.50/trigger/hack" />
+        </div>
+        <div class="field">
+          <label>SIGNAL WEBHOOK (optional override)</label>
+          <input id="new-signal" type="text" placeholder="http://192.168.1.51/trigger/signal" />
+        </div>
+      </div>
+      <div class="spacer-sm"></div>
+      <div class="tag dim">Leave webhook fields empty to use defaults from puzzles.json.</div>
+    </div>
+
+    <div class="strip"><span class="t">ACTIVE ROOMS</span></div>
+    <div class="room-list" id="rooms"></div>
+
+    <div class="strip"><span class="t">SELECTED ROOM CONTROLS</span><span class="pip"></span></div>
+    <div id="selected-block">
+      <div class="empty">Pick a room above to manage it.</div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io({ transports: ["websocket", "polling"] });
+    function emit(ev, payload = {}) { return new Promise((r) => socket.emit(ev, payload, (x) => r(x || {}))); }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    }
+
+    let selectedCode = sessionStorage.getItem("admin.sel") || null;
+    let lastRoomList = [];
+    let lastState = null;
+
+    function joinUrl(code) {
+      const u = new URL(location.href);
+      return `${u.origin}/?room=${encodeURIComponent(code)}`;
+    }
+
+    function renderRoomList(rooms) {
+      lastRoomList = rooms;
+      const c = document.getElementById("rooms");
+      if (!rooms.length) {
+        c.innerHTML = `<div class="empty">No active rooms. Create one above.</div>`;
+        return;
+      }
+      c.innerHTML = rooms.map((r) => `
+        <div class="r ${r.code === selectedCode ? "active" : ""}" data-code="${r.code}">
+          <div>
+            <div class="c">${r.code}</div>
+            <div class="meta">${r.online}/${r.players} online · ${r.phase.toUpperCase()}</div>
+          </div>
+          <button class="btn ghost" data-act="select" data-code="${r.code}">MANAGE</button>
+          <button class="btn danger" data-act="close" data-code="${r.code}">CLOSE</button>
+        </div>
+      `).join("");
+      for (const b of c.querySelectorAll("[data-act='select']")) {
+        b.addEventListener("click", () => selectRoom(b.dataset.code));
+      }
+      for (const b of c.querySelectorAll("[data-act='close']")) {
+        b.addEventListener("click", async () => {
+          if (!confirm(`Close room ${b.dataset.code}? All players will be disconnected.`)) return;
+          await emit("room:close", { code: b.dataset.code });
+          if (selectedCode === b.dataset.code) selectRoom(null);
+        });
+      }
+    }
+
+    function selectRoom(code) {
+      selectedCode = code;
+      if (code) sessionStorage.setItem("admin.sel", code);
+      else sessionStorage.removeItem("admin.sel");
+      document.getElementById("sel-tag").textContent = code || "—";
+      renderRoomList(lastRoomList);
+      renderSelected();
+    }
+
+    function renderSelected() {
+      const block = document.getElementById("selected-block");
+      if (!selectedCode) {
+        block.innerHTML = `<div class="empty">Pick a room above to manage it.</div>`;
+        return;
+      }
+      const r = lastRoomList.find((x) => x.code === selectedCode);
+      if (!r) {
+        block.innerHTML = `<div class="empty">Room ${escapeHtml(selectedCode)} no longer exists.</div>`;
+        return;
+      }
+      const u = r.unlocked || {};
+      block.innerHTML = `
+        <div class="panel brk" style="margin-bottom:10px">
+          <span class="brk-tr"></span><span class="brk-bl"></span>
+          <div class="flex between" style="margin-bottom:8px">
+            <div>
+              <div class="mono amber" style="font-size:18px;letter-spacing:0.32em">ROOM ${escapeHtml(r.code)}</div>
+              <div class="mono dim" style="font-size:9px;letter-spacing:0.2em">${r.online}/${r.players} ONLINE · ${escapeHtml(r.phase.toUpperCase())}</div>
+            </div>
+            <div class="qr">JOIN: ${escapeHtml(joinUrl(r.code))}</div>
+          </div>
+        </div>
+
+        <div class="strip"><span class="t">ROSTER</span></div>
+        <div class="admin-grid" id="players"></div>
+
+        <div class="strip"><span class="t">UNLOCKS</span></div>
+        <div class="admin-grid">
+          ${["hack","features","blueprint","signal"].map((k) => `
+            <div class="admin-row">
+              <span>${k.toUpperCase()}</span>
+              <span class="${u[k] ? "amber" : "dim"}">${u[k] ? "● UNLOCKED" : "○ LOCKED"}</span>
+            </div>`).join("")}
+        </div>
+
+        <div class="strip"><span class="t">CONTROLS</span></div>
+        <div class="admin-grid">
+          <div class="admin-row">
+            <span>UNLOCK ALL FEATURES</span>
+            <button class="btn primary" data-rc="unlock">UNLOCK</button>
+          </div>
+          <div class="admin-row">
+            <span>RESET SESSION</span>
+            <button class="btn danger" data-rc="reset">RESET</button>
+          </div>
+          <div class="admin-row">
+            <span>FIRE HACK WEBHOOK</span>
+            <button class="btn" data-rc="fire-hack">FIRE</button>
+          </div>
+          <div class="admin-row">
+            <span>FIRE SIGNAL WEBHOOK</span>
+            <button class="btn" data-rc="fire-signal">FIRE</button>
+          </div>
+        </div>
+
+        <div class="strip"><span class="t">WEBHOOK OVERRIDES</span></div>
+        <div class="panel">
+          <div class="grid-2">
+            <div class="field">
+              <label>HACK WEBHOOK</label>
+              <input id="ov-hack" type="text" placeholder="(use config default)" value="${escapeHtml(r.overrides?.hackWebhook || "")}" />
+            </div>
+            <div class="field">
+              <label>SIGNAL WEBHOOK</label>
+              <input id="ov-signal" type="text" placeholder="(use config default)" value="${escapeHtml(r.overrides?.signalWebhook || "")}" />
+            </div>
+          </div>
+          <div class="spacer-sm"></div>
+          <button class="btn full" id="ov-save">SAVE OVERRIDES</button>
+        </div>
+
+        <div class="strip"><span class="t">SYSTEM LOG</span></div>
+        <div class="log" id="log"></div>
+      `;
+
+      block.querySelector("[data-rc='unlock']").addEventListener("click", () => emit("admin:unlockAll", { code: r.code }));
+      block.querySelector("[data-rc='reset']").addEventListener("click", () => {
+        if (!confirm("Reset this session? Locks will reset.")) return;
+        emit("admin:reset", { code: r.code });
+      });
+      block.querySelector("[data-rc='fire-hack']").addEventListener("click", () => emit("admin:fire", { code: r.code, kind: "hack" }));
+      block.querySelector("[data-rc='fire-signal']").addEventListener("click", () => emit("admin:fire", { code: r.code, kind: "signal" }));
+      block.querySelector("#ov-save").addEventListener("click", async () => {
+        const hackWebhook = document.getElementById("ov-hack").value.trim();
+        const signalWebhook = document.getElementById("ov-signal").value.trim();
+        const x = await emit("room:overrides", { code: r.code, hackWebhook, signalWebhook });
+        if (x.error) alert(x.error);
+      });
+
+      renderRoster();
+      refreshLog();
+    }
+
+    function renderRoster() {
+      if (!lastState || lastState.code !== selectedCode) {
+        document.getElementById("players").innerHTML = `<div class="admin-row"><span class="dim">No live state yet…</span><span></span></div>`;
+        return;
+      }
+      const ps = lastState.players || [];
+      const html = ps.length ? ps.map((p) => `
+        <div class="admin-row">
+          <span><span class="${p.connected ? "amber" : "red"}">●</span> ${escapeHtml(p.name)}</span>
+          <button class="btn ghost" data-kick="${p.id}">KICK</button>
+        </div>
+      `).join("") : `<div class="admin-row"><span class="dim">No agents online.</span><span></span></div>`;
+      document.getElementById("players").innerHTML = html;
+      for (const b of document.querySelectorAll("[data-kick]")) {
+        b.addEventListener("click", () => emit("admin:kick", { code: selectedCode, playerId: b.dataset.kick }));
+      }
+    }
+
+    async function refreshLog() {
+      if (!selectedCode) return;
+      const r = await emit("admin:log", { code: selectedCode });
+      const el = document.getElementById("log");
+      if (!el) return;
+      el.innerHTML = (r.log || []).map((e) => {
+        const t = new Date(e.t).toLocaleTimeString();
+        return `<div class="l"><span class="t">${t}</span>${escapeHtml(e.msg)}</div>`;
+      }).join("");
+    }
+    setInterval(refreshLog, 1500);
+
+    socket.on("rooms", (rooms) => { renderRoomList(rooms); renderSelected(); });
+    socket.on("state", (s) => {
+      lastState = s;
+      if (s && s.code === selectedCode) renderRoster();
+    });
+
+    document.getElementById("btn-create").addEventListener("click", async () => {
+      const code = document.getElementById("new-code").value.trim().toUpperCase();
+      const hackWebhook = document.getElementById("new-hack").value.trim();
+      const signalWebhook = document.getElementById("new-signal").value.trim();
+      const r = await emit("room:create", { code, hackWebhook, signalWebhook });
+      if (r.error) { alert(r.error); return; }
+      document.getElementById("new-code").value = "";
+      document.getElementById("new-hack").value = "";
+      document.getElementById("new-signal").value = "";
+      selectRoom(r.code);
+    });
+
+    (async () => {
+      const r = await emit("admin:watch");
+      renderRoomList(r.rooms || []);
+      if (selectedCode && !r.rooms?.find((x) => x.code === selectedCode)) selectRoom(null);
+      else renderSelected();
+    })();
+  </script>
+</body>
+</html>
